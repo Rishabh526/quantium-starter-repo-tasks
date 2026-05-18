@@ -1,32 +1,46 @@
+from dash import Dash, html, dcc
+import plotly.express as px
 import pandas as pd
 
+df = pd.read_csv("formatted_output.csv")
 
-df1 = pd.read_csv("data/daily_sales_data_0.csv")
-df2 = pd.read_csv("data/daily_sales_data_1.csv")
-df3 = pd.read_csv("data/daily_sales_data_2.csv")
-                
-df = pd.concat([df1, df2, df3], ignore_index=True)
+app = Dash(__name__)
 
+df['Date'] = pd.to_datetime(df["Date"])
 
-df = df[df["product"] == "pink morsel"]
-
-
-df["price"] = (
-    df["price"]
-    .str.replace("$", "", regex=False)
-    .astype(float)
+daily_sales = (
+    df.groupby("Date")["Sales"]
+    .sum()
+    .reset_index()
 )
 
+daily_sales = daily_sales.sort_values("Date")
 
-df["Sales"] = df["quantity"] * df["price"]
+fig = px.line(
+    daily_sales,
+    x="Date",
+    y="Sales",
+    title="Pink Morsel Sales Over Time",
+    labels={
+        "Date": "Date",
+        "Sales": "Total Sales"
+    }
+)
+
+fig.add_vline(
+    x="2021-01-15",
+    line_dash="dash"
+    )
 
 
-final_df = df[["Sales", "date", "region"]]
+app.layout = html.Div([
+    html.H1(
+        "Soul Foods Pink Morsel Sales Analysis"
+    ),
+    dcc.Graph(
+        figure=fig
+    )
+])
 
-final_df.columns = ["Sales", "Date", "Region"]
-
-
-final_df.to_csv("formatted_output.csv", index=False)
-
-print(final_df.head())
-print(final_df.shape)
+if __name__ == "__main__":
+    app.run(debug=True)
