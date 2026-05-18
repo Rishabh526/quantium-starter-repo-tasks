@@ -1,42 +1,13 @@
-from dash import Dash, html, dcc
-import plotly.express as px
 import pandas as pd
+from dash import Dash, html, dcc, Input, Output
+import plotly.express as px
+
 
 df = pd.read_csv("formatted_output.csv")
 
+df["Date"] = pd.to_datetime(df["Date"])
+
 app = Dash(__name__)
-
-df['Date'] = pd.to_datetime(df["Date"])
-
-daily_sales = (
-    df.groupby("Date")["Sales"]
-    .sum()
-    .reset_index()
-)
-
-daily_sales = daily_sales.sort_values("Date")
-
-fig = px.line(
-    daily_sales,
-    x="Date",
-    y="Sales",
-    title="Pink Morsel Sales Over Time",
-    labels={
-        "Date": "Date",
-        "Sales": "Total Sales"
-    }
-)
-
-fig.add_vline(
-    x="2021-01-15",
-    line_dash="dash"
-    )
-
-fig.update_layout(
-    plot_bgcolor="white",
-    paper_bgcolor="#f4f6f7",
-    title_x=0.5
-)
 
 app.layout = html.Div([
 
@@ -44,33 +15,106 @@ app.layout = html.Div([
         "Soul Foods Pink Morsel Sales Analysis",
         style={
             "textAlign": "center",
-            "color": "#2c3e50",
-            "marginBottom": "10px"
+            "color": "#2c3e50"
         }
     ),
 
     html.P(
-        "Visualising sales trends before and after the January 15, 2021 price increase.",
+        "Analyse sales trends before and after the January 15, 2021 price increase",
         style={
             "textAlign": "center",
-            "color": "#7f8c8d",
-            "marginBottom": "30px"
+            "marginBottom": "20px"
         }
     ),
 
-    dcc.Graph(
-        figure=fig,
+    html.Label(
+        "Select Region:",
+        style={"fontWeight": "bold"}
+    ),
+
+    dcc.RadioItems(
+        id="region-filter",
+        options=[
+            {"label":"All","value":"all"},
+            {"label":"North","value":"north"},
+            {"label":"East","value":"east"},
+            {"label":"South","value":"south"},
+            {"label":"West","value":"west"},
+        ],
+        value="all",
+        inline=True,
         style={
-            "borderRadius": "10px",
-            "boxShadow": "0px 4px 10px rgba(0,0,0,0.1)"
+            "marginBottom":"25px"
+        }
+    ),
+
+    dcc.Graph(id="sales-graph")
+
+], style={
+    "padding":"40px",
+    "backgroundColor":"#f4f6f7",
+    "fontFamily":"Arial"
+})
+
+
+@app.callback(
+    Output("sales-graph","figure"),
+    Input("region-filter","value")
+)
+def update_graph(selected_region):
+
+    filtered_df = df
+
+    if selected_region != "all":
+        filtered_df = df[
+            df["Region"].str.lower() == selected_region
+        ]
+
+    daily_sales = (
+        filtered_df.groupby("Date")["Sales"]
+        .sum()
+        .reset_index()
+        .sort_values("Date")
+    )
+
+    fig = px.line(
+        daily_sales,
+        x="Date",
+        y="Sales",
+        title=f"Sales Trend ({selected_region.capitalize()})",
+        labels={
+            "Date":"Date",
+            "Sales":"Total Sales"
         }
     )
 
-], style={
-    "backgroundColor": "#f4f6f7",
-    "padding": "40px",
-    "fontFamily": "Arial"
-})
+    fig.add_shape(
+    type="line",
+    x0="2021-01-15",
+    x1="2021-01-15",
+    y0=0,
+    y1=daily_sales["Sales"].max(),
+    line=dict(
+        dash="dash",
+        width=2
+    )
+)
+
+    fig.add_annotation(
+        x="2021-01-15",
+        y=daily_sales["Sales"].max(),
+        text="Price Increase",
+        showarrow=True
+    )
+
+    fig.update_layout(
+        plot_bgcolor="white",
+        paper_bgcolor="#f4f6f7",
+        title_x=0.5
+    )
+
+    return fig
+
 
 if __name__ == "__main__":
     app.run(debug=True)
