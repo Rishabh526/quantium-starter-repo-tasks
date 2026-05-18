@@ -1,25 +1,23 @@
 from main import app
+from dash import html, dcc
 
 
-def test_header_present(dash_duo):
-    dash_duo.start_server(app)
+def test_header_present():
+    header = app.layout.children[0]
 
-    header = dash_duo.find_element("h1")
-
-    assert header.text == "Soul Foods Pink Morsel Sales Analysis"
-
-
-def test_visualization_present(dash_duo):
-    dash_duo.start_server(app)
-
-    graph = dash_duo.find_element("#sales-graph")
-
-    assert graph is not None
+    assert isinstance(header, html.H1)
+    assert header.id == "header"
 
 
-def test_region_picker_present(dash_duo):
-    dash_duo.start_server(app)
+def test_visualization_present():
+    graph = app.layout.children[4]
 
-    radio = dash_duo.find_element("#region-filter")
+    assert isinstance(graph, dcc.Graph)
+    assert graph.id == "sales-graph"
 
-    assert radio is not None
+
+def test_region_picker_present():
+    radio = app.layout.children[3]
+
+    assert isinstance(radio, dcc.RadioItems)
+    assert radio.id == "region-filter"
