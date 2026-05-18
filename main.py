@@ -13,6 +13,7 @@ app.layout = html.Div([
 
     html.H1(
         "Soul Foods Pink Morsel Sales Analysis",
+        id="header",
         style={
             "textAlign": "center",
             "color": "#2c3e50"
@@ -21,6 +22,7 @@ app.layout = html.Div([
 
     html.P(
         "Analyse sales trends before and after the January 15, 2021 price increase",
+        id="description",
         style={
             "textAlign": "center",
             "marginBottom": "20px"
@@ -29,6 +31,7 @@ app.layout = html.Div([
 
     html.Label(
         "Select Region:",
+        id="region-label",
         style={"fontWeight": "bold"}
     ),
 
@@ -48,7 +51,9 @@ app.layout = html.Div([
         }
     ),
 
-    dcc.Graph(id="sales-graph")
+    dcc.Graph(
+        id="sales-graph"
+    )
 
 ], style={
     "padding":"40px",
