@@ -32,15 +32,45 @@ fig.add_vline(
     line_dash="dash"
     )
 
+fig.update_layout(
+    plot_bgcolor="white",
+    paper_bgcolor="#f4f6f7",
+    title_x=0.5
+)
 
 app.layout = html.Div([
+
     html.H1(
-        "Soul Foods Pink Morsel Sales Analysis"
+        "Soul Foods Pink Morsel Sales Analysis",
+        style={
+            "textAlign": "center",
+            "color": "#2c3e50",
+            "marginBottom": "10px"
+        }
     ),
+
+    html.P(
+        "Visualising sales trends before and after the January 15, 2021 price increase.",
+        style={
+            "textAlign": "center",
+            "color": "#7f8c8d",
+            "marginBottom": "30px"
+        }
+    ),
+
     dcc.Graph(
-        figure=fig
+        figure=fig,
+        style={
+            "borderRadius": "10px",
+            "boxShadow": "0px 4px 10px rgba(0,0,0,0.1)"
+        }
     )
-])
+
+], style={
+    "backgroundColor": "#f4f6f7",
+    "padding": "40px",
+    "fontFamily": "Arial"
+})
 
 if __name__ == "__main__":
     app.run(debug=True)
